@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>三视图-教学软件</title>
+    <style>
+        html, body { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            overflow: hidden; background-color: #E0F7FA; 
+            font-family: 'Avenir Next', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; 
+            color: #5D4037; 
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        #main-wrapper { 
+            display: grid;
+            grid-template-areas: 
+                "header header"
+                "ui main"
+                "bottom bottom";
+            grid-template-columns: 16vw 1fr; 
+            grid-template-rows: 8vh 1fr 28vh; 
+            width: 100vw; height: 100vh;
+            gap: 1.5vh; padding: 1.5vh; box-sizing: border-box;
+            background-image: radial-gradient(#B2EBF2 10%, transparent 10%);
+            background-size: 30px 30px;
+        }
+
+        #mode-header { 
+            grid-area: header;
+            background: #FFF; border-radius: 50px; 
+            border: 6px solid #B2EBF2; 
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 0px rgba(178, 235, 242, 0.5);
+            padding: 0.5vh 0;
+        }
+
+        .mode-btn { 
+            padding: 1vh 1.5vw; border: none; 
+            background: #E1F5FE; color: #0277BD; cursor: pointer; 
+            font-weight: bold; margin: 0 10px;
+            border-radius: 30px; 
+            font-size: clamp(12px, 1.4vh, 16px); 
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            min-height: 46px;
+        }
+        .mode-btn.active { background: #81D4FA; color: white; transform: scale(1.05); }
+
+        #ui-panel { 
+            grid-area: ui;
+            background: #FFF; border-radius: 40px; 
+            border: 6px solid #C8E6C9; 
+            box-shadow: 0 10px 0px rgba(200, 230, 201, 0.5);
+            padding: 2vh 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            box-sizing: border-box;
+            height: 100%;
+            overflow: hidden; 
+        }
+
+        #ui-build-group, #ui-challenge-group, #inference-sidebar-v3 { display: none !important; }
+
+        .mode-build #ui-build-group { 
+            display: flex !important; 
+            flex-direction: column;
+            justify-content: space-around; 
+            height: 100%;
+            width: 100%;
+        }
+
+        .challenge-layout #ui-challenge-group { 
+            display: flex !important; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: space-around;
+            width: 100%;
+            height: 100%; 
+        }
+
+        .challenge-layout #main-wrapper {
+            grid-template-columns: 24vw 1fr;
+        }
+
+        .inference-layout #ui-panel, .inference-layout #bottom-panel { display: none !important; }
+        .inference-layout #inference-sidebar-v3 { display: flex !important; }
+
+        #grid-control-panel {
+            display: grid !important;
+            grid-template-columns: repeat(10, 2.2vh) !important; 
+            grid-template-rows: repeat(10, 2.2vh) !important;
+            gap: 1px;
+            background: #A5D6A7;
+            border: 3px solid #C8E6C9;
+            margin: 0.5vh auto; 
+            width: fit-content;
+            flex-shrink: 1; 
+        }
+
+        .grid-cell {
+            background: #FFF; 
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2vh; font-weight: bold; color: #2E7D32; 
+            cursor: pointer;
+        }
+        .grid-cell.active {
+            background: #81C784 !important; 
+            color: white !important;
+        }
+
+        #ui-panel button, #size-input {
+            width: 90% !important; 
+            display: block !important; 
+            box-sizing: border-box !important;
+            margin-bottom: 0.5vh !important;
+            margin-left: auto;
+            margin-right: auto;
+            flex-shrink: 1; 
+            font-size: clamp(11px, 1.3vh, 14px) !important; 
+            min-height: 46px;
+        }
+
+        #size-input, #ui-panel button, .inf-action-btn, .inf-reset-btn {
+            padding: 1.2vh 8px; border: none; background: #E8F5E9; color: #2E7D32;
+            border-radius: 20px; font-size: 13px; font-weight: bold;
+            box-shadow: 0 5px 0px #A5D6A7; transition: 0.1s; text-align: center; cursor: pointer;
+        }
+        #size-input { background: #F1F8E9; border: 3px solid #C8E6C9; box-shadow: none; outline: none; color: #5D4037; height: auto; }
+
+        #clear-grid-btn-challenge {
+            background-color: #FF5252 !important; 
+            color: white !important;
+            box-shadow: 0 5px 0px #D32F2F !important;
+            width: 90% !important;
+            padding: 1.2vh;
+            border-radius: 20px;
+            margin-top: 0.5vh !important;
+        }
+
+        #clear-btn-build, #inf-clear-all {
+            background-color: #FF5252 !important; color: white !important;
+            box-shadow: 0 5px 0px #D32F2F !important;
+        }
+        #ui-panel button:active { transform: translateY(3px); box-shadow: 0 2px 0px #A5D6A7; }
+
+        #canvas-container { 
+            grid-area: main;
+            background: #FFF; border-radius: 40px; 
+            border: 6px solid #FFECB3; 
+            display: block !important;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 0px rgba(255, 236, 179, 0.5);
+            contain: strict;
+        }
+        #canvas-container canvas { display: block; width: 100% !important; height: 100% !important; }
+
+        #bottom-panel { 
+            grid-area: bottom;
+            background: #FFF; border-radius: 40px; 
+            border: 6px solid #F8BBD0; 
+            box-shadow: 0 10px 0px rgba(248, 187, 208, 0.5);
+            display: flex; 
+            justify-content: space-around; 
+            align-items: center; 
+            padding: 1vh; 
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .projection-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;    
+            justify-content: center;
+            height: 100%;
+        }
+
+        .mode-build .projection-card canvas, 
+        .projection-card canvas { 
+            width: auto !important;
+            height: 20vh !important; 
+            max-width: 180px; 
+            max-height: 180px;
+            aspect-ratio: 1 / 1;
+            border: 5px solid #F8BBD0; 
+            border-radius: 0 !important; 
+            background-color: #FFFFFF;
+            box-shadow: 0 6px 0px rgba(248, 187, 208, 0.3);
+            display: block; 
+        }
+
+        .projection-card .label { 
+            margin-top: 0.5vh; 
+            font-weight: bold; 
+            font-size: clamp(10px, 1.2vh, 14px); 
+            background: #F8BBD0; 
+            color: #880E4F; 
+            padding: 2px 1.5vw; 
+            border-radius: 15px; 
+            text-align: center;
+            width: fit-content; 
+        }
+
+        .color-front { background-color: #90CAF9 !important; color: #1565C0 !important; box-shadow: 0 5px 0px #64B5F6 !important; }
+        .color-left { background-color: #EF9A9A !important; color: #B71C1C !important; box-shadow: 0 5px 0px #E57373 !important; }
+        .color-top { background-color: #FFF59D !important; color: #F57F17 !important; box-shadow: 0 5px 0px #FFF176 !important; }
+
+        .inference-layout #main-wrapper {
+            grid-template-areas: "header header" "inf-side main";
+            grid-template-columns: 32vw 1fr;
+            grid-template-rows: 8vh 1fr;
+        }
+
+        #inference-sidebar-v3 {
+            grid-area: inf-side;
+            border-radius: 40px; border: 6px solid #B0BEC5; background: #FFF;
+            display: flex; flex-direction: column; padding: 2vh; gap: 1.5vh;
+            box-sizing: border-box; height: 100%; overflow: hidden;
+        }
+
+        .inference-views-container {
+            display: grid;
+            grid-template-areas: 
+                "front-view left-view"
+                "top-view   none";
+            grid-template-columns: 1fr 1fr; 
+            grid-template-rows: auto auto;
+            gap: 2.5vh;
+            width: 100%;
+            margin: 1vh 0;
+        }
+
+        .inf-view-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .inf-view-card .canvas-wrapper {
+            width: 18vh;
+            height: 18vh;
+            border: 4px solid #CFD8DC;
+            background: #FFF;
+            border-radius: 0 !important; 
+            box-shadow: 0 6px 0 rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            padding: 0; 
+            overflow: hidden;
+        }
+
+        .inf-view-card canvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+        }
+
+        .inf-view-card .label {
+            margin-top: 0.8vh;
+            font-size: clamp(10px, 1.4vh, 14px);
+            font-weight: bold;
+            text-align: center;
+            min-width: 60%; 
+            padding: 4px 12px;
+            border-radius: 20px; 
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 0px rgba(0,0,0,0.1);
+        }
+
+        .inf-area-front { grid-area: front-view; }
+        .inf-area-left  { grid-area: left-view; }
+        .inf-area-top   { grid-area: top-view; }
+
+        .inf-v3-actions {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-top: 1vh;
+        }
+
+        .inf-btn-group-horizontal {
+            display: flex;
+            width: 100%;
+            gap: 15px;
+        }
+
+        .inf-action-btn {
+            flex: 1;
+            padding: 1.5vh 0 !important;
+            font-size: clamp(12px, 1.4vh, 15px) !important;
+            border-radius: 25px !important;
+            min-height: 46px;
+        }
+
+        .inf-footer-group {
+            margin-top: auto; 
+            display: flex;
+            flex-direction: column;
+            gap: 1.5vh;
+            width: 100%;
+        }
+
+        .inf-v3-stats {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 1.5vh 0;
+            background: #F1F8E9; 
+            border: 3px solid #C8E6C9; 
+            border-radius: 25px;
+            box-shadow: 0 6px 0px #A5D6A7; 
+            font-size: clamp(13px, 1.6vh, 18px);
+            color: #2E7D32;
+            font-weight: bold;
+        }
+
+        #inf-v3-count {
+            color: #FF5252;
+            font-size: clamp(18px, 3vh, 32px);
+            font-weight: 900;
+        }
+
+        .inf-reset-btn {
+            width: 100% !important;
+            min-height: 46px;
+        }
+
+        .modal-overlay { 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100vw; height: 100vh; 
+            background: rgba(0,0,0,0.7); 
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 99999;
+        }
+        .modal-content { 
+            background: #fff; 
+            padding: 30px; 
+            border-radius: 20px; 
+            max-width: 500px; 
+            width: 85%; 
+            line-height: 1.9;
+            text-align: left;
+        }
+        .modalBtn {
+            background: #81D4FA;
+            color: white;
+            border: 0;
+            padding: 10px 26px;
+            border-radius: 14px;
+            margin-top: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="mode-build"> 
+    <div id="main-wrapper">
+        <header id="mode-header">
+            <div class="mode-group">
+                <button id="mode-build" class="mode-btn active">建模绘制模式</button>
+                <button id="mode-challenge" class="mode-btn">平面标数模式</button>
+                <button id="mode-inference" class="mode-btn">立方体块最大最小数量问题</button>
+            </div>
+        </header>
+
+        <main id="canvas-container"></main>
+
+        <aside id="ui-panel">
+            <section id="ui-build-group">
+                <button onclick="showBuildHelp()">❔ 建模使用说明</button>
+                <input type="text" id="size-input" placeholder="长*宽*高">
+                <button>快速生成</button>
+                <button class="color-front">生成正视图</button>
+                <button class="color-left">生成左视图</button>
+                <button class="color-top">生成俯视图</button>
+                <button>自由视角</button>
+                <button>场景重置</button>
+            </section>
+            <section id="ui-challenge-group">
+                <button onclick="showMarkHelp()">🔢 标数法使用说明</button>
+                <div id="grid-control-panel"></div>
+                <button>清空所有标数</button>
+            </section>
+        </aside>
+
+        <aside id="inference-sidebar-v3">
+            <p>点击下方视口方格绘制轮廓，分析最大最小问题。</p>
+            <div class="inference-views-container">
+                <div class="inf-view-card"><div class="canvas-wrapper"><canvas width="240" height="240"></canvas></div><div class="label color-left">左视图</div></div>
+                <div class="inf-view-card"><div class="canvas-wrapper"><canvas width="240" height="240"></canvas></div><div class="label color-front">正视图</div></div>
+                <div class="inf-view-card"><div class="canvas-wrapper"><canvas width="240" height="240"></canvas></div><div class="label color-top">俯视图</div></div>
+            </div>
+            <button class="inf-action-btn">最大数量</button>
+            <button class="inf-action-btn">最小数量</button>
+            <div class="inf-v3-stats">积木总数：<strong>0</strong></div>
+            <button class="inf-reset-btn">清空所有视口</button>
+        </aside>
+
+        <footer id="bottom-panel">
+            <div class="projection-card"><canvas width="200" height="200"></canvas><div class="label">正视图</div></div>
+            <div class="projection-card"><canvas width="200" height="200"></canvas><div class="label">左视图</div></div>
+            <div class="projection-card"><canvas width="200" height="200"></canvas><div class="label">俯视图</div></div>
+        </footer>
+    </div>
+
+    <!-- 建模说明 -->
+    <div class="modal-overlay" id="buildModal">
+        <div class="modal-content">
+            <h3>📘 建模模式操作说明</h3>
+            <p>🖱️ <strong>鼠标操作：</strong></p>
+            <p>• 左键单击 = 添加立方体</p>
+            <p>• 右键单击 = 删除立方体</p>
+            <p>• 鼠标拖动 = 旋转视角</p>
+            <p>• 滚轮滚动 = 缩放视角</p>
+            <br>
+            <p>📱 <strong>平板 / 手机触控：</strong></p>
+            <p>• 单击 = 添加立方体</p>
+            <p>• 双击 = 删除立方体</p>
+            <p>• 单指拖动 = 旋转3D视角</p>
+            <p>• 双指捏合 = 缩放视角</p>
+            <button class="modalBtn" onclick="closeAllModals()">确定</button>
+        </div>
+    </div>
+
+    <!-- 标数说明 -->
+    <div class="modal-overlay" id="markModal">
+        <div class="modal-content">
+            <h3>🔢 平面标数模式说明</h3>
+            <p>🖱️ <strong>鼠标：</strong> 点击方格进行标注</p>
+            <p>📱 <strong>平板：</strong> 手指点击方格进行标注</p>
+            <p>用于练习三视图投影、方格计数、平面坐标训练</p>
+            <button class="modalBtn" onclick="closeAllModals()">确定</button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================
+        // 防盗版保护
+        // ==========================
+        (function(){
+            const allowed = ["localhost","127.0.0.1"];
+            const host = window.location.hostname;
+            if(!allowed.includes(host) && !host.endsWith(".yourdomain.com")){
+                document.body.innerHTML = "<h1>未经授权使用</h1>";
+            }
+        })();
+
+        // 禁止右键
+        document.oncontextmenu = e=>e.preventDefault();
+
+        // ==========================
+        // 触屏 + 鼠标 点击逻辑
+        // ==========================
+        const canvas = document.getElementById("canvas-container");
+        let lastTap = 0;
+
+        // 单击添加 / 双击删除
+        canvas.addEventListener("click", ()=>{
+            let now = Date.now();
+            if(now - lastTap < 300){
+                if(window.removeCube) window.removeCube();
+            }else{
+                setTimeout(()=>{
+                    if(Date.now() - lastTap > 290){
+                        if(window.addCube) window.addCube();
+                    }
+                },300);
+            }
+            lastTap = now;
+        });
+
+        canvas.addEventListener("contextmenu", e=>{
+            e.preventDefault();
+            if(window.removeCube) window.removeCube();
+        });
+
+        // 触摸旋转缩放
+        canvas.addEventListener("touchmove", e=>e.preventDefault());
+
+        window.addCube = ()=>{};
+        window.removeCube = ()=>{};
+
+        // ==========================
+        // 弹窗控制（100%正常显示）
+        // ==========================
+        function showBuildHelp(){
+            closeAllModals();
+            document.getElementById("buildModal").style.display = "flex";
+        }
+
+        function showMarkHelp(){
+            closeAllModals();
+            document.getElementById("markModal").style.display = "flex";
+        }
+
+        function closeAllModals(){
+            document.querySelectorAll(".modal-overlay").forEach(m=>{
+                m.style.display = "none";
+            });
+        }
+
+        // ==========================
+        // 原有模式切换
+        // ==========================
+        function switchMode(mode) {
+            document.body.className = '';
+            document.getElementById('main-wrapper').classList.remove('challenge-layout', 'inference-layout');
+            
+            if (mode === 'build') document.body.classList.add('mode-build');
+            if (mode === 'challenge') document.getElementById('main-wrapper').classList.add('challenge-layout');
+            if (mode === 'inference') document.getElementById('main-wrapper').classList.add('inference-layout');
+
+            document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        window.onload=()=>{
+            document.getElementById('mode-build').onclick=()=>switchMode('build');
+            document.getElementById('mode-challenge').onclick=()=>switchMode('challenge');
+            document.getElementById('mode-inference').onclick=()=>switchMode('inference');
+            switchMode('build');
+        };
+    </script>
+</body>
+</html>
