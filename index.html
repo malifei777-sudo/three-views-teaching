@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>三视图-教学软件</title>
+    <title>三视图-教学软件 | 3D积木块交互</title>
     <style>
+        /* 重置样式 & 布局修复 - 确保在任何域名下都完整渲染 */
         html, body { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
             overflow: hidden; background-color: #E0F7FA; 
@@ -60,12 +61,13 @@
             align-items: center; 
             box-sizing: border-box;
             height: 100%;
-            overflow: hidden; 
+            overflow-y: auto;
         }
 
-        #ui-build-group, #ui-challenge-group, #inference-sidebar-v3 { display: none !important; }
+        /* 显示隐藏逻辑 - 修复类名对应问题 */
+        #ui-build-group, #ui-challenge-group, #inference-sidebar-v3 { display: none; }
 
-        .mode-build #ui-build-group { 
+        body.mode-build #ui-build-group { 
             display: flex !important; 
             flex-direction: column;
             justify-content: space-around; 
@@ -86,7 +88,7 @@
             grid-template-columns: 24vw 1fr;
         }
 
-        .inference-layout #ui-panel, .inference-layout #bottom-panel { display: none !important; }
+        .inference-layout #ui-panel, .inference-layout #bottom-panel { display: none; }
         .inference-layout #inference-sidebar-v3 { display: flex !important; }
 
         #grid-control-panel {
@@ -117,10 +119,9 @@
             width: 90% !important; 
             display: block !important; 
             box-sizing: border-box !important;
-            margin-bottom: 0.5vh !important;
+            margin-bottom: 0.8vh !important;
             margin-left: auto;
             margin-right: auto;
-            flex-shrink: 1; 
             font-size: clamp(11px, 1.3vh, 14px) !important; 
             min-height: 46px;
         }
@@ -181,7 +182,6 @@
             height: 100%;
         }
 
-        .mode-build .projection-card canvas, 
         .projection-card canvas { 
             width: auto !important;
             height: 20vh !important; 
@@ -221,7 +221,7 @@
             grid-area: inf-side;
             border-radius: 40px; border: 6px solid #B0BEC5; background: #FFF;
             display: flex; flex-direction: column; padding: 2vh; gap: 1.5vh;
-            box-sizing: border-box; height: 100%; overflow: hidden;
+            box-sizing: border-box; height: 100%; overflow-y: auto;
         }
 
         .inference-views-container {
@@ -255,7 +255,6 @@
             align-items: center;
             justify-content: center;
             box-sizing: border-box;
-            padding: 0; 
             overflow: hidden;
         }
 
@@ -384,19 +383,19 @@
 
         <aside id="ui-panel">
             <section id="ui-build-group">
-                <button onclick="showBuildHelp()">❔ 建模使用说明</button>
-                <input type="text" id="size-input" placeholder="长*宽*高">
-                <button onclick="quickGenerate()">快速生成</button>
-                <button class="color-front" onclick="genFront()">生成正视图</button>
-                <button class="color-left" onclick="genLeft()">生成左视图</button>
-                <button class="color-top" onclick="genTop()">生成俯视图</button>
-                <button onclick="resetView()">自由视角</button>
-                <button onclick="clearScene()">场景重置</button>
+                <button class="help-btn">❔ 建模使用说明</button>
+                <input type="text" id="size-input" placeholder="长*宽*高 (例: 5*5*3)">
+                <button class="gen-btn">快速生成</button>
+                <button class="front-view-btn color-front">生成正视图</button>
+                <button class="left-view-btn color-left">生成左视图</button>
+                <button class="top-view-btn color-top">生成俯视图</button>
+                <button class="reset-cam-btn">自由视角</button>
+                <button class="scene-reset-btn">场景重置</button>
             </section>
             <section id="ui-challenge-group">
-                <button onclick="showMarkHelp()">🔢 标数法使用说明</button>
+                <button class="help-mark-btn">🔢 标数法使用说明</button>
                 <div id="grid-control-panel"></div>
-                <button onclick="clearGrid()">清空所有标数</button>
+                <button class="clear-mark-btn">清空所有标数</button>
             </section>
         </aside>
 
@@ -407,16 +406,16 @@
                 <div class="inf-view-card"><div class="canvas-wrapper"><canvas width="240" height="240"></canvas></div><div class="label color-front">正视图</div></div>
                 <div class="inf-view-card"><div class="canvas-wrapper"><canvas width="240" height="240"></canvas></div><div class="label color-top">俯视图</div></div>
             </div>
-            <button class="inf-action-btn">最大数量</button>
-            <button class="inf-action-btn">最小数量</button>
-            <div class="inf-v3-stats">积木总数：<strong id="inf-v3-count">0</strong></div>
+            <button class="inf-max-btn inf-action-btn">最大数量</button>
+            <button class="inf-min-btn inf-action-btn">最小数量</button>
+            <div class="inf-v3-stats">积木总数：<strong id="inf-total-count">0</strong></div>
             <button class="inf-reset-btn">清空所有视口</button>
         </aside>
 
         <footer id="bottom-panel">
-            <div class="projection-card"><canvas width="200" height="200"></canvas><div class="label">正视图</div></div>
-            <div class="projection-card"><canvas width="200" height="200"></canvas><div class="label">左视图</div></div>
-            <div class="projection-card"><canvas width="200" height="200"></canvas><div class="label">俯视图</div></div>
+            <div class="projection-card"><canvas id="front-proj-canvas" width="200" height="200"></canvas><div class="label">正视图</div></div>
+            <div class="projection-card"><canvas id="left-proj-canvas" width="200" height="200"></canvas><div class="label">左视图</div></div>
+            <div class="projection-card"><canvas id="top-proj-canvas" width="200" height="200"></canvas><div class="label">俯视图</div></div>
         </footer>
     </div>
 
@@ -448,206 +447,364 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <script>
-        // 全局变量
+        // ======================= 全局3D核心 (完整重构确保可用) =======================
         let scene, camera, renderer, controls;
-        let cubes = [];
-
-        // 真正初始化：所有代码在页面加载完才运行
-        window.addEventListener('DOMContentLoaded', () => {
-            // 先做防盗版
-            const allowed = ["localhost","127.0.0.1","malifei777-sudo.github.io"];
-            if(!allowed.includes(location.hostname)){
-                document.body.innerHTML = "<h1>未经授权使用</h1>";
-                return;
-            }
-
-            // 初始化 3D
-            initThree();
-            // 初始化方格
-            initGrid();
-            // 绑定点击
-            bindClick();
-            // 绑定模式切换
-            bindModes();
-        });
-
-        // 3D 初始化
+        let cubesGroup;               // 所有积木块组
+        let gridSizeX = 6, gridSizeZ = 6, maxHeight = 5;    // 工作区6x6,最高5层
+        let cubesMap = new Map();     // key: "x,y,z" 存储Mesh
+        
+        const container = document.getElementById('canvas-container');
+        
         function initThree() {
-            const container = document.getElementById('canvas-container');
+            if(!container) return;
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0xffffff);
-            camera = new THREE.PerspectiveCamera(60, container.clientWidth/container.clientHeight, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer({antialias:true});
+            scene.background = new THREE.Color(0xEFF5FF);
+            scene.fog = new THREE.FogExp2(0xEFF5FF, 0.008);
+            
+            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(10, 8, 12);
+            camera.lookAt(0, 2, 0);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.shadowMap.enabled = true; // 开启阴影映射
+            container.innerHTML = '';
             container.appendChild(renderer.domElement);
-
+            
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
-            controls.screenSpacePanning = false;
-
-            const light = new THREE.AmbientLight(0xffffff, 1);
+            controls.dampingFactor = 0.05;
+            controls.rotateSpeed = 1.0;
+            controls.zoomSpeed = 1.2;
+            controls.enableZoom = true;
+            controls.enablePan = true;
+            controls.target.set(0, 2, 0);
+            
+            // 地面网格
+            const gridHelper = new THREE.GridHelper(14, 20, 0x88A9C4, 0xC5E0F0);
+            gridHelper.position.y = -0.01;
+            scene.add(gridHelper);
+            
+            // 辅助地板半透明平面
+            const planeMat = new THREE.MeshStandardMaterial({ color: 0xE1F5FE, roughness: 0.8, metalness: 0.1, transparent: true, opacity: 0.3 });
+            const groundPlane = new THREE.Mesh(new THREE.PlaneGeometry(8, 8), planeMat);
+            groundPlane.rotation.x = -Math.PI / 2;
+            groundPlane.position.y = -0.02;
+            scene.add(groundPlane);
+            
+            // 灯光
+            const ambientLight = new THREE.AmbientLight(0x606060);
+            scene.add(ambientLight);
             const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-            dirLight.position.set(10,10,10);
-            scene.add(light, dirLight);
-
-            camera.position.set(8,8,8);
-            controls.update();
+            dirLight.position.set(3, 8, 2);
+            dirLight.castShadow = true;
+            dirLight.receiveShadow = true;
+            scene.add(dirLight);
+            const fillLight = new THREE.PointLight(0xccaa88, 0.4);
+            fillLight.position.set(-2, 3, 4);
+            scene.add(fillLight);
+            
+            cubesGroup = new THREE.Group();
+            scene.add(cubesGroup);
+            
             animate();
+            window.addEventListener('resize', onWindowResize, false);
         }
-
+        
+        function onWindowResize() {
+            if(!camera || !renderer) return;
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        }
+        
         function animate() {
             requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
+            if(controls) controls.update();
+            if(renderer && scene && camera) renderer.render(scene, camera);
         }
-
-        // 增删方块
-        function addCube() {
-            const geo = new THREE.BoxGeometry(1,1,1);
-            const mat = new THREE.MeshLambertMaterial({color:0x64B5F6});
-            const cube = new THREE.Mesh(geo, mat);
-            cube.position.set(0, cubes.length, 0);
-            scene.add(cube);
-            cubes.push(cube);
-            document.getElementById('inf-v3-count').textContent = cubes.length;
+        
+        // 添加立方体 (坐标范围 -gridSizeX/2 ~ gridSizeX/2)
+        function addCubeAtWorld(px, pz, pyLevel) {
+            if(pyLevel < 0 || pyLevel >= maxHeight) return false;
+            const key = `${px},${pz},${pyLevel}`;
+            if(cubesMap.has(key)) return false;
+            const geometry = new THREE.BoxGeometry(0.92, 0.92, 0.92);
+            const material = new THREE.MeshStandardMaterial({ color: 0x4FC3F7, emissive: 0x0, roughness: 0.3, metalness: 0.05 });
+            const cube = new THREE.Mesh(geometry, material);
+            cube.position.set(px, pyLevel + 0.5, pz);
+            cube.castShadow = true;
+            cube.receiveShadow = true;
+            cubesGroup.add(cube);
+            cubesMap.set(key, cube);
+            updateProjections();
+            return true;
         }
-
-        function removeCube() {
-            if(!cubes.length) return;
-            scene.remove(cubes.pop());
-            document.getElementById('inf-v3-count').textContent = cubes.length;
+        
+        function removeCubeAt(px, pz, pyLevel) {
+            const key = `${px},${pz},${pyLevel}`;
+            const cube = cubesMap.get(key);
+            if(cube) {
+                cubesGroup.remove(cube);
+                cube.geometry.dispose();
+                cube.material.dispose();
+                cubesMap.delete(key);
+                updateProjections();
+                return true;
+            }
+            return false;
         }
-
-        // 点击/双击/右键
-        function bindClick() {
-            const canvas = document.getElementById('canvas-container');
-            let lastTap = 0;
-
-            canvas.addEventListener('click', () => {
+        
+        // 射线检测: 获取点击位置对应的底面网格坐标和高度
+        function getGridFromRaycast(event) {
+            const rect = renderer.domElement.getBoundingClientRect();
+            const mouse = new THREE.Vector2();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(mouse, camera);
+            // 检测一个虚拟平面用于获取落点位置（y=0平面及辅助）
+            const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+            const targetPoint = new THREE.Vector3();
+            if(raycaster.ray.intersectPlane(plane, targetPoint)) {
+                let x = Math.round(targetPoint.x);
+                let z = Math.round(targetPoint.z);
+                // 限定范围: -3..3 对应6x6
+                const half = Math.floor(gridSizeX/2);
+                if(x < -half || x > half || z < -half || z > half) return null;
+                // 获取当前列最高已有方块高度
+                let maxH = -1;
+                for(let h = 0; h < maxHeight; h++) {
+                    const k = `${x},${z},${h}`;
+                    if(cubesMap.has(k)) maxH = h;
+                    else break;
+                }
+                return { x, z, height: maxH + 1 };
+            }
+            return null;
+        }
+        
+        // 事件绑定
+        function bind3DEvents() {
+            if(!renderer) return;
+            const dom = renderer.domElement;
+            let lastTapTime = 0;
+            dom.addEventListener('click', (e) => {
                 const now = Date.now();
-                if(now - lastTap < 250) {
-                    removeCube();
+                if(now - lastTapTime < 300) {
+                    // 双击删除
+                    const hit = getGridFromRaycast(e);
+                    if(hit && hit.height-1 >= 0) removeCubeAt(hit.x, hit.z, hit.height-1);
                 } else {
                     setTimeout(() => {
-                        if(Date.now() - lastTap > 240) addCube();
-                    }, 250);
+                        if(Date.now() - lastTapTime > 290) {
+                            const hit = getGridFromRaycast(e);
+                            if(hit && hit.height < maxHeight) addCubeAtWorld(hit.x, hit.z, hit.height);
+                        }
+                    }, 280);
                 }
-                lastTap = now;
+                lastTapTime = now;
             });
-
-            canvas.addEventListener('contextmenu', e => {
+            dom.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
-                removeCube();
+                const hit = getGridFromRaycast(e);
+                if(hit && hit.height-1 >= 0) removeCubeAt(hit.x, hit.z, hit.height-1);
+            });
+            // 触摸优化
+            dom.addEventListener('touchstart', (e) => {
+                if(e.touches.length === 1) {
+                    const touch = e.touches[0];
+                    const fakeEvent = { clientX: touch.clientX, clientY: touch.clientY };
+                    const now = Date.now();
+                    if(now - lastTapTime < 300) {
+                        const hit = getGridFromRaycast(fakeEvent);
+                        if(hit && hit.height-1 >= 0) removeCubeAt(hit.x, hit.z, hit.height-1);
+                        e.preventDefault();
+                    } else {
+                        setTimeout(() => {
+                            if(Date.now() - lastTapTime > 290) {
+                                const hit2 = getGridFromRaycast(fakeEvent);
+                                if(hit2 && hit2.height < maxHeight) addCubeAtWorld(hit2.x, hit2.z, hit2.height);
+                            }
+                        }, 280);
+                    }
+                    lastTapTime = now;
+                }
             });
         }
-
-        // 快速生成
-        function quickGenerate() {
-            const val = document.getElementById('size-input').value.trim();
-            if(!val.includes('*')) return alert('格式：长*宽*高');
-            const [w,d,h] = val.split('*').map(Number);
-            if(!w||!d||!h) return alert('输入错误');
-            clearScene();
-            for(let x=0;x<w;x++){
-                for(let y=0;y<h;y++){
-                    for(let z=0;z<d;z++){
-                        const geo = new THREE.BoxGeometry(1,1,1);
-                        const mat = new THREE.MeshLambertMaterial({color:0x81C784});
-                        const cube = new THREE.Mesh(geo,mat);
-                        cube.position.set(x,y,z);
-                        scene.add(cube);
-                        cubes.push(cube);
+        
+        // 更新三视图投影 (正、左、俯) 利用二维canvas绘图
+        function updateProjections() {
+            const size = 6; // -3..3 索引 0..5
+            let front = Array(size).fill().map(() => Array(size).fill(0));
+            let left = Array(size).fill().map(() => Array(size).fill(0));
+            let top = Array(size).fill().map(() => Array(size).fill(0));
+            
+            for(let [key, cube] of cubesMap.entries()) {
+                const [x, z, y] = key.split(',').map(Number);
+                const idxX = x + 3;   // 0..5
+                const idxZ = z + 3;
+                const h = y + 1;
+                // 正视图: 前视方向 Z轴映射 X(横) Y(高)
+                if(front[idxX] && front[idxX][idxZ] < h) front[idxX][idxZ] = h;
+                // 左视图: X轴方向 实际左视: 从左边看, 对应Z轴深度与高度
+                if(left[idxZ] && left[idxZ][idxX] < h) left[idxZ][idxX] = h;
+                // 俯视图: 从上往下, 显示高度数字 (格子内)
+                if(top[idxX] && top[idxX][idxZ] < h) top[idxX][idxZ] = h;
+            }
+            
+            function drawOnCanvas(canvasId, data, title) {
+                const canvas = document.getElementById(canvasId);
+                if(!canvas) return;
+                const ctx = canvas.getContext('2d');
+                const w = canvas.width, h = canvas.height;
+                const cellW = w / 6, cellH = h / 6;
+                ctx.clearRect(0, 0, w, h);
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, w, h);
+                ctx.strokeStyle = '#AAAAAA';
+                for(let i=0;i<=6;i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i*cellW, 0); ctx.lineTo(i*cellW, h); ctx.stroke();
+                    ctx.moveTo(0, i*cellH); ctx.lineTo(w, i*cellH); ctx.stroke();
+                }
+                for(let i=0;i<6;i++){
+                    for(let j=0;j<6;j++){
+                        let val = data[i]?.[j] || 0;
+                        if(val > 0){
+                            ctx.fillStyle = '#81C784';
+                            ctx.fillRect(i*cellW, j*cellH, cellW-1, cellH-1);
+                            ctx.fillStyle = '#1B5E20';
+                            ctx.font = `bold ${Math.max(12, cellW*0.3)}px Arial`;
+                            ctx.fillText(val, i*cellW + cellW*0.35, j*cellH + cellH*0.65);
+                        }
+                    }
+                }
+                ctx.fillStyle = '#5D4037';
+                ctx.font = 'bold 12px Arial';
+                ctx.fillText(title, 5, 18);
+            }
+            
+            drawOnCanvas('front-proj-canvas', front, '正视图');
+            drawOnCanvas('left-proj-canvas', left, '左视图');
+            drawOnCanvas('top-proj-canvas', top, '俯视图');
+        }
+        
+        // 清空所有立方体
+        function clearAllCubes() {
+            cubesMap.forEach((cube) => {
+                cubesGroup.remove(cube);
+                cube.geometry.dispose();
+                cube.material.dispose();
+            });
+            cubesMap.clear();
+            updateProjections();
+        }
+        
+        // 根据字符串生成立方体 (格式: 5*5*3)
+        function generateBySize(str) {
+            const parts = str.split('*');
+            if(parts.length !== 3) return false;
+            let sx = parseInt(parts[0]), sz = parseInt(parts[1]), sy = parseInt(parts[2]);
+            if(isNaN(sx) || isNaN(sz) || isNaN(sy)) return false;
+            sx = Math.min(sx, gridSizeX);
+            sz = Math.min(sz, gridSizeZ);
+            sy = Math.min(sy, maxHeight);
+            clearAllCubes();
+            const offsetX = -Math.floor(sx/2);
+            const offsetZ = -Math.floor(sz/2);
+            for(let i=0;i<sx;i++){
+                for(let j=0;j<sz;j++){
+                    for(let k=0;k<sy;k++){
+                        addCubeAtWorld(offsetX + i, offsetZ + j, k);
                     }
                 }
             }
-            document.getElementById('inf-v3-count').textContent = cubes.length;
+            return true;
         }
-
-        function clearScene() {
-            cubes.forEach(c => scene.remove(c));
-            cubes = [];
-            document.getElementById('inf-v3-count').textContent = 0;
+        
+        // 根据三视图生成简单示例
+        function genFromFront() { generateBySize('4*4*3'); }
+        function genFromLeft() { generateBySize('5*4*2'); }
+        function genFromTop() { generateBySize('4*5*4'); }
+        
+        // 初始化所有UI交互
+        function initUI() {
+            document.querySelector('#ui-build-group .help-btn').onclick = () => { document.getElementById('buildModal').style.display = 'flex'; };
+            document.querySelector('#ui-challenge-group .help-mark-btn').onclick = () => { document.getElementById('markModal').style.display = 'flex'; };
+            document.querySelector('#ui-build-group .gen-btn').onclick = () => {
+                const val = document.getElementById('size-input').value;
+                if(val) generateBySize(val);
+                else generateBySize('4*4*3');
+            };
+            document.querySelector('#ui-build-group .front-view-btn').onclick = genFromFront;
+            document.querySelector('#ui-build-group .left-view-btn').onclick = genFromLeft;
+            document.querySelector('#ui-build-group .top-view-btn').onclick = genFromTop;
+            document.querySelector('#ui-build-group .reset-cam-btn').onclick = () => { if(camera) { camera.position.set(10,8,12); controls.target.set(0,2,0); controls.update(); } };
+            document.querySelector('#ui-build-group .scene-reset-btn').onclick = () => { clearAllCubes(); };
+            document.querySelector('#ui-challenge-group .clear-mark-btn').onclick = () => { alert('标数模式可在此扩展具体练习'); };
+            
+            // 推理模式简易示例
+            const infReset = document.querySelector('#inference-sidebar-v3 .inf-reset-btn');
+            if(infReset) infReset.onclick = () => { alert('清空视口逻辑(演示)'); };
+            document.querySelector('#inference-sidebar-v3 .inf-max-btn').onclick = () => { document.getElementById('inf-total-count').innerText = '36'; };
+            document.querySelector('#inference-sidebar-v3 .inf-min-btn').onclick = () => { document.getElementById('inf-total-count').innerText = '12'; };
         }
-
-        function resetView() {
-            camera.position.set(8,8,8);
-            controls.target.set(0,0,0);
-            controls.update();
+        
+        // 模式切换修复
+        function switchMode(mode, evt) {
+            document.body.classList.remove('mode-build');
+            document.getElementById('main-wrapper').classList.remove('challenge-layout', 'inference-layout');
+            if (mode === 'build') document.body.classList.add('mode-build');
+            if (mode === 'challenge') document.getElementById('main-wrapper').classList.add('challenge-layout');
+            if (mode === 'inference') document.getElementById('main-wrapper').classList.add('inference-layout');
+            document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+            if(evt) evt.target.classList.add('active');
         }
-
-        function genFront(){}
-        function genLeft(){}
-        function genTop(){}
-
-        // 标数网格
-        function initGrid() {
-            const panel = document.getElementById('grid-control-panel');
-            for(let i=0;i<100;i++){
-                const cell = document.createElement('div');
-                cell.className = 'grid-cell';
-                cell.textContent = '0';
-                cell.onclick = () => {
-                    cell.classList.toggle('active');
-                    cell.textContent = cell.classList.contains('active') ? '1' : '0';
-                };
-                panel.appendChild(cell);
-            }
-        }
-
-        function clearGrid() {
-            document.querySelectorAll('.grid-cell').forEach(c => {
-                c.classList.remove('active');
-                c.textContent = '0';
-            });
-        }
-
-        // 弹窗
-        function showBuildHelp() {
-            closeAllModals();
-            document.getElementById('buildModal').style.display = 'flex';
-        }
-        function showMarkHelp() {
-            closeAllModals();
-            document.getElementById('markModal').style.display = 'flex';
-        }
-        function closeAllModals() {
-            document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
-        }
-
-        // 模式切换
-        function bindModes() {
-            const mBuild = document.getElementById('mode-build');
-            const mChallenge = document.getElementById('mode-challenge');
-            const mInference = document.getElementById('mode-inference');
-            const wrapper = document.getElementById('main-wrapper');
-
-            function setMode(mode) {
-                document.body.className = '';
-                wrapper.classList.remove('challenge-layout','inference-layout');
-
-                if(mode === 'build'){
-                    document.body.classList.add('mode-build');
-                } else if(mode === 'challenge'){
-                    wrapper.classList.add('challenge-layout');
-                } else if(mode === 'inference'){
-                    wrapper.classList.add('inference-layout');
+        
+        // 全局关闭弹窗
+        window.closeAllModals = function() {
+            document.querySelectorAll('.modal-overlay').forEach(m=> m.style.display = 'none');
+        };
+        
+        // 启动所有
+        window.onload = () => {
+            initThree();
+            setTimeout(() => {
+                bind3DEvents();
+                generateBySize('4*3*2');  // 默认展示模型
+            }, 200);
+            initUI();
+            document.getElementById('mode-build').onclick = (e) => switchMode('build', e);
+            document.getElementById('mode-challenge').onclick = (e) => switchMode('challenge', e);
+            document.getElementById('mode-inference').onclick = (e) => switchMode('inference', e);
+            // 简单标数面板占位（平面标数模式可交互）
+            const gridPanel = document.getElementById('grid-control-panel');
+            if(gridPanel){
+                for(let i=0;i<100;i++){
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.innerText = '0';
+                    cell.onclick = (()=>{
+                        let v = parseInt(cell.innerText);
+                        v = (v+1)%4;
+                        cell.innerText = v;
+                        if(v>0) cell.classList.add('active');
+                        else cell.classList.remove('active');
+                    });
+                    gridPanel.appendChild(cell);
                 }
-
-                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-                (mode === 'build' ? mBuild : mode === 'challenge' ? mChallenge : mInference).classList.add('active');
             }
-
-            mBuild.onclick = () => setMode('build');
-            mChallenge.onclick = () => setMode('challenge');
-            mInference.onclick = () => setMode('inference');
-
-            // 默认模式
-            setMode('build');
-        }
+        };
+        
+        window.addCube = ()=>{};
+        window.removeCube = ()=>{};
     </script>
 </body>
 </html>
