@@ -454,13 +454,13 @@
         // ==========================
         // 防盗版保护
         // ==========================
-        (function(){
-            const allowed = ["localhost","127.0.0.1"];
-            const host = window.location.hostname;
-            if(!allowed.includes(host) && !host.endsWith(".yourdomain.com")){
-                document.body.innerHTML = "<h1>未经授权使用</h1>";
-            }
-        })();
+(function(){
+    const allowed = ["localhost","127.0.0.1", "malifei777-sudo.github.io"];
+    const host = window.location.hostname;
+    if(!allowed.includes(host)){
+        document.body.innerHTML = "<h1>未经授权使用</h1>";
+    }
+})();
 
         // 禁止右键
         document.oncontextmenu = e=>e.preventDefault();
