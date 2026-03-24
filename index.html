@@ -386,17 +386,17 @@
             <section id="ui-build-group">
                 <button onclick="showBuildHelp()">❔ 建模使用说明</button>
                 <input type="text" id="size-input" placeholder="长*宽*高">
-                <button>快速生成</button>
-                <button class="color-front">生成正视图</button>
-                <button class="color-left">生成左视图</button>
-                <button class="color-top">生成俯视图</button>
-                <button>自由视角</button>
-                <button>场景重置</button>
+                <button onclick="quickGenerate()">快速生成</button>
+                <button class="color-front" onclick="genFront()">生成正视图</button>
+                <button class="color-left" onclick="genLeft()">生成左视图</button>
+                <button class="color-top" onclick="genTop()">生成俯视图</button>
+                <button onclick="resetView()">自由视角</button>
+                <button onclick="clearScene()">场景重置</button>
             </section>
             <section id="ui-challenge-group">
                 <button onclick="showMarkHelp()">🔢 标数法使用说明</button>
                 <div id="grid-control-panel"></div>
-                <button>清空所有标数</button>
+                <button onclick="clearGrid()">清空所有标数</button>
             </section>
         </aside>
 
@@ -409,7 +409,7 @@
             </div>
             <button class="inf-action-btn">最大数量</button>
             <button class="inf-action-btn">最小数量</button>
-            <div class="inf-v3-stats">积木总数：<strong>0</strong></div>
+            <div class="inf-v3-stats">积木总数：<strong id="inf-v3-count">0</strong></div>
             <button class="inf-reset-btn">清空所有视口</button>
         </aside>
 
@@ -448,97 +448,206 @@
         </div>
     </div>
 
-    <script>
-        // ==========================
-        // 防盗版保护（仅允许你的 GitHub 域名）
-        // ==========================
-(function(){
-    const allowed = [
-        "localhost",
-        "127.0.0.1",
-        "malifei777-sudo.github.io"
-    ];
-    const host = window.location.hostname;
-    if(!allowed.includes(host)){
-        document.body.innerHTML = "<h1>未经授权使用</h1>";
-    }
-})();
-    </script>
-
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
 
     <script>
-        // ==========================
-        // 触屏 + 鼠标 点击逻辑
-        // ==========================
-        const canvas = document.getElementById("canvas-container");
-        let lastTap = 0;
+        // 全局变量
+        let scene, camera, renderer, controls;
+        let cubes = [];
 
-        canvas.addEventListener("click", ()=>{
-            let now = Date.now();
-            if(now - lastTap < 300){
-                if(window.removeCube) window.removeCube();
-            }else{
-                setTimeout(()=>{
-                    if(Date.now() - lastTap > 290){
-                        if(window.addCube) window.addCube();
-                    }
-                },300);
+        // 真正初始化：所有代码在页面加载完才运行
+        window.addEventListener('DOMContentLoaded', () => {
+            // 先做防盗版
+            const allowed = ["localhost","127.0.0.1","malifei777-sudo.github.io"];
+            if(!allowed.includes(location.hostname)){
+                document.body.innerHTML = "<h1>未经授权使用</h1>";
+                return;
             }
-            lastTap = now;
+
+            // 初始化 3D
+            initThree();
+            // 初始化方格
+            initGrid();
+            // 绑定点击
+            bindClick();
+            // 绑定模式切换
+            bindModes();
         });
 
-        canvas.addEventListener("contextmenu", e=>{
-            e.preventDefault();
-            if(window.removeCube) window.removeCube();
-        });
+        // 3D 初始化
+        function initThree() {
+            const container = document.getElementById('canvas-container');
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xffffff);
+            camera = new THREE.PerspectiveCamera(60, container.clientWidth/container.clientHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({antialias:true});
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
 
-        canvas.addEventListener("touchmove", e=>e.preventDefault());
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.screenSpacePanning = false;
 
-        window.addCube = ()=>{};
-        window.removeCube = ()=>{};
+            const light = new THREE.AmbientLight(0xffffff, 1);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+            dirLight.position.set(10,10,10);
+            scene.add(light, dirLight);
 
-        // ==========================
-        // 弹窗控制
-        // ==========================
-        function showBuildHelp(){
-            closeAllModals();
-            document.getElementById("buildModal").style.display = "flex";
+            camera.position.set(8,8,8);
+            controls.update();
+            animate();
         }
 
-        function showMarkHelp(){
-            closeAllModals();
-            document.getElementById("markModal").style.display = "flex";
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
         }
 
-        function closeAllModals(){
-            document.querySelectorAll(".modal-overlay").forEach(m=>{
-                m.style.display = "none";
+        // 增删方块
+        function addCube() {
+            const geo = new THREE.BoxGeometry(1,1,1);
+            const mat = new THREE.MeshLambertMaterial({color:0x64B5F6});
+            const cube = new THREE.Mesh(geo, mat);
+            cube.position.set(0, cubes.length, 0);
+            scene.add(cube);
+            cubes.push(cube);
+            document.getElementById('inf-v3-count').textContent = cubes.length;
+        }
+
+        function removeCube() {
+            if(!cubes.length) return;
+            scene.remove(cubes.pop());
+            document.getElementById('inf-v3-count').textContent = cubes.length;
+        }
+
+        // 点击/双击/右键
+        function bindClick() {
+            const canvas = document.getElementById('canvas-container');
+            let lastTap = 0;
+
+            canvas.addEventListener('click', () => {
+                const now = Date.now();
+                if(now - lastTap < 250) {
+                    removeCube();
+                } else {
+                    setTimeout(() => {
+                        if(Date.now() - lastTap > 240) addCube();
+                    }, 250);
+                }
+                lastTap = now;
+            });
+
+            canvas.addEventListener('contextmenu', e => {
+                e.preventDefault();
+                removeCube();
             });
         }
 
-        // ==========================
-        // 模式切换
-        // ==========================
-        function switchMode(mode) {
-            document.body.className = '';
-            document.getElementById('main-wrapper').classList.remove('challenge-layout', 'inference-layout');
-            
-            if (mode === 'build') document.body.classList.add('mode-build');
-            if (mode === 'challenge') document.getElementById('main-wrapper').classList.add('challenge-layout');
-            if (mode === 'inference') document.getElementById('main-wrapper').classList.add('inference-layout');
-
-            document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
-            event.target.classList.add('active');
+        // 快速生成
+        function quickGenerate() {
+            const val = document.getElementById('size-input').value.trim();
+            if(!val.includes('*')) return alert('格式：长*宽*高');
+            const [w,d,h] = val.split('*').map(Number);
+            if(!w||!d||!h) return alert('输入错误');
+            clearScene();
+            for(let x=0;x<w;x++){
+                for(let y=0;y<h;y++){
+                    for(let z=0;z<d;z++){
+                        const geo = new THREE.BoxGeometry(1,1,1);
+                        const mat = new THREE.MeshLambertMaterial({color:0x81C784});
+                        const cube = new THREE.Mesh(geo,mat);
+                        cube.position.set(x,y,z);
+                        scene.add(cube);
+                        cubes.push(cube);
+                    }
+                }
+            }
+            document.getElementById('inf-v3-count').textContent = cubes.length;
         }
 
-        window.onload=()=>{
-            document.getElementById('mode-build').onclick=()=>switchMode('build');
-            document.getElementById('mode-challenge').onclick=()=>switchMode('challenge');
-            document.getElementById('mode-inference').onclick=()=>switchMode('inference');
-            switchMode('build');
-        };
+        function clearScene() {
+            cubes.forEach(c => scene.remove(c));
+            cubes = [];
+            document.getElementById('inf-v3-count').textContent = 0;
+        }
+
+        function resetView() {
+            camera.position.set(8,8,8);
+            controls.target.set(0,0,0);
+            controls.update();
+        }
+
+        function genFront(){}
+        function genLeft(){}
+        function genTop(){}
+
+        // 标数网格
+        function initGrid() {
+            const panel = document.getElementById('grid-control-panel');
+            for(let i=0;i<100;i++){
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                cell.textContent = '0';
+                cell.onclick = () => {
+                    cell.classList.toggle('active');
+                    cell.textContent = cell.classList.contains('active') ? '1' : '0';
+                };
+                panel.appendChild(cell);
+            }
+        }
+
+        function clearGrid() {
+            document.querySelectorAll('.grid-cell').forEach(c => {
+                c.classList.remove('active');
+                c.textContent = '0';
+            });
+        }
+
+        // 弹窗
+        function showBuildHelp() {
+            closeAllModals();
+            document.getElementById('buildModal').style.display = 'flex';
+        }
+        function showMarkHelp() {
+            closeAllModals();
+            document.getElementById('markModal').style.display = 'flex';
+        }
+        function closeAllModals() {
+            document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+        }
+
+        // 模式切换
+        function bindModes() {
+            const mBuild = document.getElementById('mode-build');
+            const mChallenge = document.getElementById('mode-challenge');
+            const mInference = document.getElementById('mode-inference');
+            const wrapper = document.getElementById('main-wrapper');
+
+            function setMode(mode) {
+                document.body.className = '';
+                wrapper.classList.remove('challenge-layout','inference-layout');
+
+                if(mode === 'build'){
+                    document.body.classList.add('mode-build');
+                } else if(mode === 'challenge'){
+                    wrapper.classList.add('challenge-layout');
+                } else if(mode === 'inference'){
+                    wrapper.classList.add('inference-layout');
+                }
+
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                (mode === 'build' ? mBuild : mode === 'challenge' ? mChallenge : mInference).classList.add('active');
+            }
+
+            mBuild.onclick = () => setMode('build');
+            mChallenge.onclick = () => setMode('challenge');
+            mInference.onclick = () => setMode('inference');
+
+            // 默认模式
+            setMode('build');
+        }
     </script>
 </body>
 </html>
