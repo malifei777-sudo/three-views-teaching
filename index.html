@@ -420,7 +420,6 @@
         </footer>
     </div>
 
-    <!-- 建模说明 -->
     <div class="modal-overlay" id="buildModal">
         <div class="modal-content">
             <h3>📘 建模模式操作说明</h3>
@@ -439,7 +438,6 @@
         </div>
     </div>
 
-    <!-- 标数说明 -->
     <div class="modal-overlay" id="markModal">
         <div class="modal-content">
             <h3>🔢 平面标数模式说明</h3>
@@ -452,26 +450,31 @@
 
     <script>
         // ==========================
-        // 防盗版保护
+        // 防盗版保护（仅允许你的 GitHub 域名）
         // ==========================
 (function(){
-    const allowed = ["localhost","127.0.0.1", "malifei777-sudo.github.io"];
+    const allowed = [
+        "localhost",
+        "127.0.0.1",
+        "malifei777-sudo.github.io"
+    ];
     const host = window.location.hostname;
     if(!allowed.includes(host)){
         document.body.innerHTML = "<h1>未经授权使用</h1>";
     }
 })();
+    </script>
 
-        // 禁止右键
-        document.oncontextmenu = e=>e.preventDefault();
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
 
+    <script>
         // ==========================
         // 触屏 + 鼠标 点击逻辑
         // ==========================
         const canvas = document.getElementById("canvas-container");
         let lastTap = 0;
 
-        // 单击添加 / 双击删除
         canvas.addEventListener("click", ()=>{
             let now = Date.now();
             if(now - lastTap < 300){
@@ -491,14 +494,13 @@
             if(window.removeCube) window.removeCube();
         });
 
-        // 触摸旋转缩放
         canvas.addEventListener("touchmove", e=>e.preventDefault());
 
         window.addCube = ()=>{};
         window.removeCube = ()=>{};
 
         // ==========================
-        // 弹窗控制（100%正常显示）
+        // 弹窗控制
         // ==========================
         function showBuildHelp(){
             closeAllModals();
@@ -517,7 +519,7 @@
         }
 
         // ==========================
-        // 原有模式切换
+        // 模式切换
         // ==========================
         function switchMode(mode) {
             document.body.className = '';
