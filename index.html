@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三视图-教学软件</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@latest/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@latest/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body class="mode-build"> 
+    <div id="main-wrapper">
+        <header id="mode-header">
+            <div class="mode-group">
+                <button id="btn-mode-build" class="mode-btn active">建模绘制模式</button>
+                <button id="btn-mode-challenge" class="mode-btn">平面标数模式</button>
+                <button id="btn-mode-inference" class="mode-btn">立方体块最大最小数量问题</button>
+            </div>
+        </header>
+
+        <main id="canvas-container">
+        </main>
+
+        <aside id="ui-panel">
+            <section id="ui-build-group">
+                <button id="info-btn-build">❔ 建模使用说明</button>
+                
+                <div class="quick-input-group">
+                    <input type="text" id="size-input" placeholder="长*宽*高">
+                    <button id="quick-gen-btn">快速生成</button>
+                </div>
+                
+                <hr class="divider">
+                
+                <button class="view-btn color-front" data-view="front">生成正视图</button>
+                <button class="view-btn color-left" data-view="left">生成左视图</button>
+                <button class="view-btn color-top" data-view="top">生成俯视图</button>
+
+                <button class="view-btn-reset" id="reset-view-btn-build">自由视角</button>
+                <button id="clear-btn-build">场景重置</button>
+            </section>
+
+            <section id="ui-challenge-group">
+                <button id="info-btn-challenge">🔢 标数法使用说明</button>
+                
+                <div id="grid-control-panel"></div> 
+                
+                <button id="clear-grid-btn-challenge">清空所有标数</button>
+            </section>
+        </aside>
+
+        <aside id="inference-sidebar-v3">
+            <div class="inf-v3-header">
+                <p class="inf-guide-text">点击下方视口方格绘制轮廓，分析最大最小问题。单击增加，双击删除。</p>
+            </div>
+
+            <div class="inference-views-container">
+                <div class="inf-view-card inf-area-left">
+                    <div class="canvas-wrapper">
+                        <canvas id="inf-canvas-left" width="240" height="240" class="inf-clickable-canvas"></canvas>
+                    </div>
+                    <div class="label color-left">左视图</div>
+                </div>
+
+                <div class="inf-view-card inf-area-front">
+                    <div class="canvas-wrapper">
+                        <canvas id="inf-canvas-front" width="240" height="240" class="inf-clickable-canvas"></canvas>
+                    </div>
+                    <div class="label color-front">正视图</div>
+                </div>
+
+                <div class="inf-view-card inf-area-top">
+                    <div class="canvas-wrapper">
+                        <canvas id="inf-canvas-top" width="240" height="240" class="inf-clickable-canvas"></canvas>
+                    </div>
+                    <div class="label color-top">俯视图</div>
+                </div>
+            </div>
+
+            <div class="inf-v3-actions">
+                <div class="inf-btn-group-horizontal">
+                    <button id="btn-inf-gen-max" class="inf-action-btn highlight-max">1. 最大数量</button>
+                    <button id="btn-inf-gen-min" class="inf-action-btn highlight-min">2. 最小数量</button>
+                </div>
+            </div>
+
+            <div class="inf-footer-group">
+                <div class="inf-v3-stats">
+                    <span>积木总数：</span>
+                    <strong id="inf-v3-count">0</strong>
+                </div>
+                <button id="inf-clear-all" class="inf-reset-btn">清空所有视口</button>
+            </div>
+        </aside>
+
+        <footer id="bottom-panel">
+            <div class="projection-card">
+                <canvas id="canvas-front" width="200" height="200"></canvas>
+                <div class="label">正视图</div>
+            </div>
+            <div class="projection-card">
+                <canvas id="canvas-left" width="200" height="200"></canvas>
+                <div class="label">左视图</div>
+            </div>
+            <div class="projection-card">
+                <canvas id="canvas-top" width="200" height="200"></canvas>
+                <div class="label">俯视图</div>
+            </div>
+        </footer>
+    </div>
+
+    <div id="instruction-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <button id="close-modal">确定</button>
+        </div>
+    </div>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>

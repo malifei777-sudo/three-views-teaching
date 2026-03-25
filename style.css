@@ -1,0 +1,362 @@
+/* ============================================================
+    模块 0：全局基础 definition (还原为原始设定)
+    ============================================================ */
+html, body { 
+    margin: 0; padding: 0; width: 100%; height: 100%; 
+    overflow: hidden; background-color: #E0F7FA; 
+    font-family: 'Avenir Next', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; 
+    color: #5D4037; 
+}
+
+#main-wrapper { 
+    display: grid;
+    grid-template-areas: 
+        "header header"
+        "ui main"
+        "bottom bottom";
+    grid-template-columns: 16vw 1fr; 
+    grid-template-rows: 8vh 1fr 28vh; 
+    width: 100vw; height: 100vh;
+    gap: 1.5vh; padding: 1.5vh; box-sizing: border-box;
+    background-image: radial-gradient(#B2EBF2 10%, transparent 10%);
+    background-size: 30px 30px;
+}
+
+/* ============================================================
+    模块 1：顶部模式导航栏
+    ============================================================ */
+#mode-header { 
+    grid-area: header;
+    background: #FFF; border-radius: 50px; 
+    border: 6px solid #B2EBF2; 
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 0px rgba(178, 235, 242, 0.5);
+    padding: 0.5vh 0;
+}
+
+.mode-btn { 
+    padding: 1vh 1.5vw; border: none; 
+    background: #E1F5FE; color: #0277BD; cursor: pointer; 
+    font-weight: bold; margin: 0 10px;
+    border-radius: 30px; 
+    font-size: clamp(12px, 1.4vh, 16px); 
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.mode-btn.active { background: #81D4FA; color: white; transform: scale(1.05); }
+
+/* ============================================================
+    模块 2：左侧任务栏 (#ui-panel) 
+    ============================================================ */
+#ui-panel { 
+    grid-area: ui;
+    background: #FFF; border-radius: 40px; 
+    border: 6px solid #C8E6C9; 
+    box-shadow: 0 10px 0px rgba(200, 230, 201, 0.5);
+    padding: 2vh 0; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    box-sizing: border-box;
+    height: 100%;
+    overflow: hidden; 
+}
+
+#ui-build-group, #ui-challenge-group, #inference-sidebar-v3 { display: none !important; }
+
+.mode-build #ui-build-group { 
+    display: flex !important; 
+    flex-direction: column;
+    justify-content: space-around; 
+    height: 100%;
+    width: 100%;
+}
+
+.challenge-layout #ui-challenge-group { 
+    display: flex !important; 
+    flex-direction: column;
+    align-items: center; 
+    justify-content: space-around;
+    width: 100%;
+    height: 100%; 
+}
+
+.challenge-layout #main-wrapper {
+    grid-template-columns: 24vw 1fr;
+}
+
+.inference-layout #ui-panel, .inference-layout #bottom-panel { display: none !important; }
+.inference-layout #inference-sidebar-v3 { display: flex !important; }
+
+#grid-control-panel {
+    display: grid !important;
+    grid-template-columns: repeat(10, 2.2vh) !important; 
+    grid-template-rows: repeat(10, 2.2vh) !important;
+    gap: 1px;
+    background: #A5D6A7;
+    border: 3px solid #C8E6C9;
+    margin: 0.5vh auto; 
+    width: fit-content;
+    flex-shrink: 1; 
+}
+
+.grid-cell {
+    background: #FFF; 
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2vh; font-weight: bold; color: #2E7D32; 
+    cursor: pointer;
+}
+.grid-cell.active {
+    background: #81C784 !important; 
+    color: white !important;
+}
+
+#ui-panel button, #size-input {
+    width: 90% !important; 
+    display: block !important; 
+    box-sizing: border-box !important;
+    margin-bottom: 0.5vh !important;
+    margin-left: auto;
+    margin-right: auto;
+    flex-shrink: 1; 
+    font-size: clamp(11px, 1.3vh, 14px) !important; 
+}
+
+#size-input, #ui-panel button, .inf-action-btn, .inf-reset-btn {
+    padding: 1.2vh 8px; border: none; background: #E8F5E9; color: #2E7D32;
+    border-radius: 20px; font-size: 13px; font-weight: bold;
+    box-shadow: 0 5px 0px #A5D6A7; transition: 0.1s; text-align: center; cursor: pointer;
+}
+#size-input { background: #F1F8E9; border: 3px solid #C8E6C9; box-shadow: none; outline: none; color: #5D4037; height: auto; }
+
+#clear-grid-btn-challenge {
+    background-color: #FF5252 !important; 
+    color: white !important;
+    box-shadow: 0 5px 0px #D32F2F !important;
+    width: 90% !important;
+    padding: 1.2vh;
+    border-radius: 20px;
+    margin-top: 0.5vh !important;
+}
+
+#clear-btn-build, #inf-clear-all {
+    background-color: #FF5252 !important; color: white !important;
+    box-shadow: 0 5px 0px #D32F2F !important;
+}
+#ui-panel button:active { transform: translateY(3px); box-shadow: 0 2px 0px #A5D6A7; }
+
+/* ============================================================
+    模块 3：右侧 3D 舞台展示区
+    ============================================================ */
+#canvas-container { 
+    grid-area: main;
+    background: #FFF; border-radius: 40px; 
+    border: 6px solid #FFECB3; 
+    display: block !important;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 0px rgba(255, 236, 179, 0.5);
+    contain: strict;
+}
+#canvas-container canvas { display: block; width: 100% !important; height: 100% !important; }
+
+/* ============================================================
+    模块 4：下方 2D 视图投影区
+    ============================================================ */
+#bottom-panel { 
+    grid-area: bottom;
+    background: #FFF; border-radius: 40px; 
+    border: 6px solid #F8BBD0; 
+    box-shadow: 0 10px 0px rgba(248, 187, 208, 0.5);
+    display: flex; 
+    justify-content: space-around; 
+    align-items: center; 
+    padding: 1vh; 
+    position: relative;
+    box-sizing: border-box;
+}
+
+.projection-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;    
+    justify-content: center;
+    height: 100%;
+}
+
+.mode-build .projection-card canvas, 
+.projection-card canvas { 
+    width: auto !important;
+    height: 20vh !important; 
+    max-width: 180px; 
+    max-height: 180px;
+    aspect-ratio: 1 / 1;
+    border: 5px solid #F8BBD0; 
+    border-radius: 0 !important; 
+    background-color: #FFFFFF;
+    box-shadow: 0 6px 0px rgba(248, 187, 208, 0.3);
+    display: block; 
+}
+
+.projection-card .label { 
+    margin-top: 0.5vh; 
+    font-weight: bold; 
+    font-size: clamp(10px, 1.2vh, 14px); 
+    background: #F8BBD0; 
+    color: #880E4F; 
+    padding: 2px 1.5vw; 
+    border-radius: 15px; 
+    text-align: center;
+    width: fit-content; 
+}
+
+/* ============================================================
+    模块 6：教学色彩同步
+    ============================================================ */
+.color-front { background-color: #90CAF9 !important; color: #1565C0 !important; box-shadow: 0 5px 0px #64B5F6 !important; }
+.color-left { background-color: #EF9A9A !important; color: #B71C1C !important; box-shadow: 0 5px 0px #E57373 !important; }
+.color-top { background-color: #FFF59D !important; color: #F57F17 !important; box-shadow: 0 5px 0px #FFF176 !important; }
+
+/* ============================================================
+    模块 7：极限推理模式专用布局
+    ============================================================ */
+
+.inference-layout #main-wrapper {
+    grid-template-areas: "header header" "inf-side main";
+    grid-template-columns: 32vw 1fr;
+    grid-template-rows: 8vh 1fr;
+}
+
+#inference-sidebar-v3 {
+    grid-area: inf-side;
+    border-radius: 40px; border: 6px solid #B0BEC5; background: #FFF;
+    display: flex; flex-direction: column; padding: 2vh; gap: 1.5vh;
+    box-sizing: border-box; height: 100%; overflow: hidden;
+}
+
+/* 🌟 三视图核心布局重构 */
+.inference-views-container {
+    display: grid;
+    /* 🌟 修改点：
+       第一行：正视图(左1) + 左视图(左2)
+       第二行：俯视图(左1) + 留空(右2)
+    */
+    grid-template-areas: 
+        "front-view left-view"
+        "top-view   none";
+    grid-template-columns: 1fr 1fr; 
+    grid-template-rows: auto auto;
+    gap: 2.5vh;
+    width: 100%;
+    margin: 1vh 0;
+}
+
+.inf-view-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+/* 🌟 核心：外轮廓锁定 18vh，取消圆角，物理充满 */
+.inf-view-card .canvas-wrapper {
+    width: 18vh;
+    height: 18vh;
+    border: 4px solid #CFD8DC;
+    background: #FFF;
+    border-radius: 0 !important; 
+    box-shadow: 0 6px 0 rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: 0; 
+    overflow: hidden;
+}
+
+.inf-view-card canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+}
+
+/* 🌟 文字标签：绝对居中 + 圆角背景 + 立体感 */
+.inf-view-card .label {
+    margin-top: 0.8vh;
+    font-size: clamp(10px, 1.4vh, 14px);
+    font-weight: bold;
+    text-align: center;
+    min-width: 60%; 
+    padding: 4px 12px;
+    border-radius: 20px; 
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 0px rgba(0,0,0,0.1);
+}
+
+.inf-area-front { grid-area: front-view; }
+.inf-area-left  { grid-area: left-view; }
+.inf-area-top   { grid-area: top-view; }
+
+/* 2. 下方按钮栏居中等宽 */
+.inf-v3-actions {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 1vh;
+}
+
+.inf-btn-group-horizontal {
+    display: flex;
+    width: 100%;
+    gap: 15px;
+}
+
+.inf-action-btn {
+    flex: 1;
+    padding: 1.5vh 0 !important;
+    font-size: clamp(12px, 1.4vh, 15px) !important;
+    border-radius: 25px !important;
+}
+
+/* 3. 统计框高级化 */
+.inf-footer-group {
+    margin-top: auto; 
+    display: flex;
+    flex-direction: column;
+    gap: 1.5vh;
+    width: 100%;
+}
+
+.inf-v3-stats {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 1.5vh 0;
+    background: #F1F8E9; 
+    border: 3px solid #C8E6C9; 
+    border-radius: 25px;
+    box-shadow: 0 6px 0px #A5D6A7; 
+    font-size: clamp(13px, 1.6vh, 18px);
+    color: #2E7D32;
+    font-weight: bold;
+}
+
+#inf-v3-count {
+    color: #FF5252;
+    font-size: clamp(18px, 3vh, 32px);
+    font-weight: 900;
+}
+
+.inf-reset-btn {
+    width: 100% !important;
+}
+
+/* 弹窗维持原状 */
+.modal-overlay { position: fixed !important; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 99999 !important; pointer-events: all !important; }
+.modal-content { background: white; padding: 30px; border-radius: 20px; max-width: 400px; width: 90%; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
