@@ -1,5 +1,1 @@
-[buildMode.js](https://github.com/user-attachments/files/26234040/buildMode.js)
-[challengeMode.js](https://github.com/user-attachments/files/26234043/challengeMode.js)[style.css](https://github.com/user-attachments/files/26234048/style.css)
-[main.js](https://github.com/user-attachments/files/26234047/main.js)
-[inferenceMode.js](https://github.com/user-attachments/files/26234046/inferenceMode.js)
-[index.html](https://github.com/user-attachments/files/26234044/index.html)
+
